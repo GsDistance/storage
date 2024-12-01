@@ -2,105 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GsD File Browser</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        #file-browser {
-            background-color: #f4f4f4;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        #file-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .file-item:hover {
-            background-color: #e0e0e0;
-        }
-        .file-icon {
-            margin-right: 10px;
-        }
-        .file-size {
-            margin-left: auto;
-            color: #666;
-            font-size: 0.8em;
-        }
-        #refresh-btn {
-            display: block;
-            margin: 10px auto;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern File Browser</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="file-browser">
-        <h1>GsD File Browser</h1>
-        <button id="refresh-btn">Refresh Files</button>
-        <ul id="file-list">
-            <li>Loading files...</li>
-        </ul>
+    <div class="container">
+        <div class="sidebar">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search files...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="file-tree" id="fileTree"></div>
+        </div>
+        <div class="main-content">
+            <div class="breadcrumb" id="breadcrumb"></div>
+            <div class="file-grid" id="fileGrid"></div>
+        </div>
+        <div class="preview-panel" id="previewPanel">
+            <div class="preview-header">
+                <h3>Preview</h3>
+                <button class="close-preview"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="preview-content"></div>
+            <div class="file-info"></div>
+        </div>
     </div>
-
-    <script>
-        const fileList = document.getElementById('file-list');
-
-        // Mock data for demonstration - replace with actual API call
-        const mockFiles = [
-            { name: 'logo', is_dir: true },
-            { name: 'GsD.code-workspace', is_dir: false, size_bytes: 97 },
-            { name: '.git', is_dir: true }
-        ];
-
-        function renderFiles(files) {
-            fileList.innerHTML = ''; // Clear previous contents
-            
-            files.forEach(file => {
-                const fileItem = document.createElement('li');
-                fileItem.className = 'file-item';
-                
-                const icon = document.createElement('span');
-                icon.className = `file-icon ${file.is_dir ? 'directory' : 'file'}`;
-                icon.textContent = file.is_dir ? '📁' : '📄';
-                
-                const name = document.createElement('span');
-                name.textContent = file.name;
-                
-                // Add size for files
-                if (!file.is_dir && file.size_bytes) {
-                    const size = document.createElement('small');
-                    size.className = 'file-size';
-                    size.textContent = ` (${(file.size_bytes / 1024).toFixed(2)} KB)`;
-                    name.appendChild(size);
-                }
-                
-                fileItem.appendChild(icon);
-                fileItem.appendChild(name);
-                
-                fileList.appendChild(fileItem);
-            });
-        }
-
-        // Initial render
-        renderFiles(mockFiles);
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

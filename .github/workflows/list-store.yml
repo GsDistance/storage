@@ -1,0 +1,32 @@
+name: List Store Directory Contents
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+  push:
+    paths:
+      - 'store/**'   # Triggers when changes are made in store directory
+
+jobs:
+  list-contents:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        
+      - name: Generate store directory JSON
+        run: |
+          echo "{" > store_contents.json
+          echo "  \"files\": [" >> store_contents.json
+          find store -type f -printf '    {\n      "path": "%P",\n      "size": "%s",\n      "type": "%y",\n      "modified": "%TY-%Tm-%Td %TH:%TM"\n    },\n' >> store_contents.json
+          # Remove the last comma and close the JSON array and object
+          sed -i '$ s/,$//' store_contents.json
+          echo "  ]" >> store_contents.json
+          echo "}" >> store_contents.json
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add store_contents.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update store contents JSON" && git push)
