@@ -3,6 +3,7 @@ class FileBrowser {
         this.currentPath = '';
         this.fileData = null;
         this.init();
+        this.initTheme();
     }
 
     async init() {
@@ -78,6 +79,7 @@ class FileBrowser {
             'jpeg': 'image',
             'png': 'image',
             'gif': 'image',
+            'svg': 'svg',
             'mp4': 'video',
             'mov': 'video',
             'mp3': 'audio',
@@ -211,7 +213,8 @@ class FileBrowser {
             'image': 'fas fa-file-image',
             'video': 'fas fa-file-video',
             'audio': 'fas fa-file-audio',
-            'code': 'fas fa-file-code'
+            'code': 'fas fa-file-code',
+            'svg': 'fas fa-file-vector'
         };
         return iconMap[type] || 'fas fa-file';
     }
@@ -238,6 +241,58 @@ class FileBrowser {
             const img = document.createElement('img');
             img.src = `/store/${fileInfo.path}`;
             previewContent.appendChild(img);
+        } else if (fileInfo.type === 'svg') {
+            try {
+                const response = await fetch(`/store/${fileInfo.path}`);
+                const svgText = await response.text();
+                
+                // Create a container for the SVG with controls
+                const container = document.createElement('div');
+                container.className = 'svg-preview-container';
+                
+                // Add the SVG content
+                container.innerHTML = `
+                    <div class="svg-controls">
+                        <button class="zoom-in"><i class="fas fa-search-plus"></i></button>
+                        <button class="zoom-reset"><i class="fas fa-undo"></i></button>
+                        <button class="zoom-out"><i class="fas fa-search-minus"></i></button>
+                    </div>
+                    <div class="svg-wrapper">${svgText}</div>
+                `;
+                
+                previewContent.appendChild(container);
+                
+                // Get the SVG element
+                const svg = container.querySelector('svg');
+                if (svg) {
+                    // Make SVG responsive
+                    svg.setAttribute('width', '100%');
+                    svg.setAttribute('height', '100%');
+                    svg.style.maxHeight = '500px';
+                    
+                    // Setup zoom controls
+                    let currentZoom = 1;
+                    const zoomStep = 0.1;
+                    const wrapper = container.querySelector('.svg-wrapper');
+                    
+                    container.querySelector('.zoom-in').addEventListener('click', () => {
+                        currentZoom += zoomStep;
+                        wrapper.style.transform = `scale(${currentZoom})`;
+                    });
+                    
+                    container.querySelector('.zoom-out').addEventListener('click', () => {
+                        currentZoom = Math.max(0.1, currentZoom - zoomStep);
+                        wrapper.style.transform = `scale(${currentZoom})`;
+                    });
+                    
+                    container.querySelector('.zoom-reset').addEventListener('click', () => {
+                        currentZoom = 1;
+                        wrapper.style.transform = 'scale(1)';
+                    });
+                }
+            } catch (error) {
+                previewContent.innerHTML = '<p>Error loading SVG preview</p>';
+            }
         } else if (fileInfo.type === 'text' || fileInfo.type === 'code') {
             try {
                 const response = await fetch(`/store/${fileInfo.path}`);
@@ -338,6 +393,28 @@ class FileBrowser {
                 <p>There was a problem loading the file list. Please try again later.</p>
             </div>
         `;
+    }
+
+    initTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.checked = true;
+        }
+
+        // Add theme toggle listener
+        themeToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
     }
 }
 
