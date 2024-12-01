@@ -2,257 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GsDistance Storage</title>
+    <title>GsD File Browser</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
-        }
-        header {
-            background-color: #ffffff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            line-height: 1.6;
         }
-        .controls {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        #file-browser {
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        #file-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .file-item {
             display: flex;
-            gap: 10px;
-        }
-        .search-box {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .filter-select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .storage-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .storage-item {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.2s;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .storage-item:hover {
-            transform: translateY(-5px);
+        .file-item:hover {
+            background-color: #e0e0e0;
         }
-        .storage-item img {
-            max-width: 100%;
-            height: auto;
+        .file-icon {
+            margin-right: 10px;
+        }
+        .file-size {
+            margin-left: auto;
+            color: #666;
+            font-size: 0.8em;
+        }
+        #refresh-btn {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
             border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .folder-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        .metadata {
-            text-align: left;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .breadcrumb {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .breadcrumb-item {
-            color: #0066cc;
             cursor: pointer;
-            padding: 5px;
-        }
-        .breadcrumb-item:hover {
-            text-decoration: underline;
-        }
-        .breadcrumb-separator {
-            margin: 0 5px;
-            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>GsDistance Storage</h1>
-        </header>
-        
-        <div class="breadcrumb" id="breadcrumb">
-            <span class="breadcrumb-item" data-path="">Home</span>
-        </div>
-
-        <div class="controls">
-            <input type="text" class="search-box" id="searchBox" placeholder="Search files...">
-            <select class="filter-select" id="fileFilter">
-                <option value="all">All Items</option>
-                <option value="folder">Folders</option>
-                <option value="svg">SVG Files</option>
-                <option value="png">PNG Files</option>
-            </select>
-        </div>
-
-        <div class="storage-grid" id="storageGrid">
-            <!-- Content will be loaded dynamically -->
-        </div>
+    <div id="file-browser">
+        <h1>GsD File Browser</h1>
+        <button id="refresh-btn">Refresh Files</button>
+        <ul id="file-list">
+            <li>Loading files...</li>
+        </ul>
     </div>
 
     <script>
-        let currentPath = '';
+        const fileList = document.getElementById('file-list');
 
-        const fileSystem = {
-            'logo/': {
-                'bw.svg1/': {
-                    'horizontal-logo.svg': { type: 'svg' }
-                },
-                'svg1/': {
-                    'horizontal-logo.svg': { type: 'svg' }
-                },
-                'png1/': {
-                    'horizontal-logo.png': { type: 'png' },
-                    'mobile-logo.png': { type: 'png' },
-                    'vertical-logo.png': { type: 'png' },
-                    'wordmark-logo.png': { type: 'png' }
-                },
-                'png2/': {
-                    'horizontal-logo.png': { type: 'png' },
-                    'mobile-logo.png': { type: 'png' },
-                    'vertical-logo.png': { type: 'png' },
-                    'wordmark-logo.png': { type: 'png' }
-                },
-                'png3/': {
-                    'horizontal-logo.png': { type: 'png' },
-                    'mobile-logo.png': { type: 'png' },
-                    'vertical-logo.png': { type: 'png' },
-                    'wordmark-logo.png': { type: 'png' }
-                },
-                'png4/': {
-                    'horizontal-logo.png': { type: 'png' },
-                    'mobile-logo.png': { type: 'png' },
-                    'vertical-logo.png': { type: 'png' },
-                    'wordmark-logo.png': { type: 'png' }
-                },
-                'compressed.png1/': {
-                    'horizontal-logo.png': { type: 'png' },
-                    'mobile-logo.png': { type: 'png' },
-                    'vertical-logo.png': { type: 'png' },
-                    'wordmark-logo.png': { type: 'png' }
-                }
-            }
-        };
+        // Mock data for demonstration - replace with actual API call
+        const mockFiles = [
+            { name: 'logo', is_dir: true },
+            { name: 'GsD.code-workspace', is_dir: false, size_bytes: 97 },
+            { name: '.git', is_dir: true }
+        ];
 
-        function getItemsInPath(path) {
-            let current = fileSystem;
-            if (path) {
-                const parts = path.split('/').filter(p => p);
-                for (const part of parts) {
-                    current = current[part + '/'] || current[part] || {};
-                }
-            }
+        function renderFiles(files) {
+            fileList.innerHTML = ''; // Clear previous contents
             
-            return Object.entries(current).map(([name, content]) => ({
-                name: name.endsWith('/') ? name.slice(0, -1) : name,
-                type: name.endsWith('/') ? 'folder' : content.type,
-                path: path + name
-            }));
-        }
-
-        function updateBreadcrumb(path) {
-            const breadcrumb = document.getElementById('breadcrumb');
-            const parts = path.split('/').filter(p => p);
-            let html = '<span class="breadcrumb-item" data-path="">Home</span>';
-            let currentPath = '';
-
-            parts.forEach((part, index) => {
-                currentPath += part + '/';
-                html += '<span class="breadcrumb-separator">/</span>';
-                html += `<span class="breadcrumb-item" data-path="${currentPath}">${part}</span>`;
-            });
-
-            breadcrumb.innerHTML = html;
-
-            document.querySelectorAll('.breadcrumb-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    navigateToPath(item.dataset.path);
-                });
-            });
-        }
-
-        function navigateToPath(path) {
-            currentPath = path;
-            updateBreadcrumb(path);
-            displayItems();
-        }
-
-        function displayItems() {
-            const grid = document.getElementById('storageGrid');
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const filterType = document.getElementById('fileFilter').value;
-            
-            grid.innerHTML = '';
-            
-            const items = getItemsInPath(currentPath);
-            
-            items.filter(item => {
-                return (filterType === 'all' || item.type === filterType) &&
-                       item.name.toLowerCase().includes(searchTerm);
-            }).forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'storage-item';
+            files.forEach(file => {
+                const fileItem = document.createElement('li');
+                fileItem.className = 'file-item';
                 
-                if (item.type === 'folder') {
-                    div.innerHTML = `
-                        <div class="folder-icon">📁</div>
-                        <h3>${item.name}</h3>
-                        <div class="metadata">
-                            <p>Type: Folder</p>
-                        </div>
-                    `;
-                    div.addEventListener('click', () => {
-                        navigateToPath(item.path);
-                    });
-                } else {
-                    const isImage = ['image', 'svg', 'png'].includes(item.type);
-                    div.innerHTML = `
-                        <img src="${item.path}" alt="${item.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%23f0f0f0%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22>No Image</text></svg>'">
-                        <h3>${item.name}</h3>
-                        <div class="metadata">
-                            <p>Type: ${item.type.toUpperCase()}</p>
-                        </div>
-                    `;
+                const icon = document.createElement('span');
+                icon.className = `file-icon ${file.is_dir ? 'directory' : 'file'}`;
+                icon.textContent = file.is_dir ? '📁' : '📄';
+                
+                const name = document.createElement('span');
+                name.textContent = file.name;
+                
+                // Add size for files
+                if (!file.is_dir && file.size_bytes) {
+                    const size = document.createElement('small');
+                    size.className = 'file-size';
+                    size.textContent = ` (${(file.size_bytes / 1024).toFixed(2)} KB)`;
+                    name.appendChild(size);
                 }
                 
-                grid.appendChild(div);
+                fileItem.appendChild(icon);
+                fileItem.appendChild(name);
+                
+                fileList.appendChild(fileItem);
             });
         }
 
-        // Event listeners
-        document.getElementById('searchBox').addEventListener('input', displayItems);
-        document.getElementById('fileFilter').addEventListener('change', displayItems);
-
-        // Initial display
-        displayItems();
+        // Initial render
+        renderFiles(mockFiles);
     </script>
 </body>
 </html>
