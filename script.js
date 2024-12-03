@@ -231,6 +231,8 @@ class FileBrowser {
     async showPreview(name, fileInfo) {
         const previewContent = document.querySelector('.preview-content');
         const fileInfoPanel = document.querySelector('.file-info');
+        const linkInput = document.querySelector('.link-input');
+        const copyButton = document.querySelector('.copy-link');
         
         // Clear previous content
         previewContent.innerHTML = '';
@@ -245,6 +247,20 @@ class FileBrowser {
             <p><strong>Path:</strong> ${fileInfo.path || this.currentPath + '/' + name}</p>
         `;
 
+        // Generate and set permanent link
+        const permanentLink = this.generatePermanentLink(fileInfo.path || this.currentPath + '/' + name);
+        linkInput.value = permanentLink;
+
+        // Add copy button functionality
+        copyButton.addEventListener('click', () => {
+            navigator.clipboard.writeText(permanentLink).then(() => {
+                copyButton.classList.add('copied');
+                setTimeout(() => {
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
         // Show preview based on file type
         if (fileInfo.type === 'image') {
             const img = document.createElement('img');
@@ -254,51 +270,7 @@ class FileBrowser {
             try {
                 const response = await fetch(`/store/${fileInfo.path}`);
                 const svgText = await response.text();
-                
-                // Create a container for the SVG with controls
-                const container = document.createElement('div');
-                container.className = 'svg-preview-container';
-                
-                // Add the SVG content
-                container.innerHTML = `
-                    <div class="svg-controls">
-                        <button class="zoom-in"><i class="fas fa-search-plus"></i></button>
-                        <button class="zoom-reset"><i class="fas fa-undo"></i></button>
-                        <button class="zoom-out"><i class="fas fa-search-minus"></i></button>
-                    </div>
-                    <div class="svg-wrapper">${svgText}</div>
-                `;
-                
-                previewContent.appendChild(container);
-                
-                // Get the SVG element
-                const svg = container.querySelector('svg');
-                if (svg) {
-                    // Make SVG responsive
-                    svg.setAttribute('width', '100%');
-                    svg.setAttribute('height', '100%');
-                    svg.style.maxHeight = '500px';
-                    
-                    // Setup zoom controls
-                    let currentZoom = 1;
-                    const zoomStep = 0.1;
-                    const wrapper = container.querySelector('.svg-wrapper');
-                    
-                    container.querySelector('.zoom-in').addEventListener('click', () => {
-                        currentZoom += zoomStep;
-                        wrapper.style.transform = `scale(${currentZoom})`;
-                    });
-                    
-                    container.querySelector('.zoom-out').addEventListener('click', () => {
-                        currentZoom = Math.max(0.1, currentZoom - zoomStep);
-                        wrapper.style.transform = `scale(${currentZoom})`;
-                    });
-                    
-                    container.querySelector('.zoom-reset').addEventListener('click', () => {
-                        currentZoom = 1;
-                        wrapper.style.transform = 'scale(1)';
-                    });
-                }
+                this.createSVGPreview(svgText);
             } catch (error) {
                 previewContent.innerHTML = '<p>Error loading SVG preview</p>';
             }
@@ -313,6 +285,64 @@ class FileBrowser {
         } else {
             previewContent.innerHTML = '<p>Preview not available for this file type</p>';
         }
+    }
+
+    createSVGPreview(svgContent) {
+        const previewContent = document.querySelector('.preview-content');
+        previewContent.innerHTML = `
+            <div class="svg-preview-container">
+                <div class="svg-controls">
+                    <button class="zoom-in">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="zoom-out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="zoom-reset">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+                <div class="svg-wrapper">
+                    ${svgContent}
+                </div>
+            </div>
+        `;
+
+        const svgWrapper = previewContent.querySelector('.svg-wrapper');
+        const zoomInBtn = previewContent.querySelector('.zoom-in');
+        const zoomOutBtn = previewContent.querySelector('.zoom-out');
+        const zoomResetBtn = previewContent.querySelector('.zoom-reset');
+
+        let currentScale = 1;
+        const maxScale = 3;
+        const minScale = 0.5;
+        const scaleStep = 0.2;
+
+        zoomInBtn.addEventListener('click', () => {
+            if (currentScale < maxScale) {
+                currentScale += scaleStep;
+                svgWrapper.style.transform = `scale(${currentScale})`;
+            }
+        });
+
+        zoomOutBtn.addEventListener('click', () => {
+            if (currentScale > minScale) {
+                currentScale -= scaleStep;
+                svgWrapper.style.transform = `scale(${currentScale})`;
+            }
+        });
+
+        zoomResetBtn.addEventListener('click', () => {
+            currentScale = 1;
+            svgWrapper.style.transform = `scale(${currentScale})`;
+        });
+    }
+
+    generatePermanentLink(path) {
+        // Get the current URL's origin and pathname up to the repository root
+        const baseUrl = window.location.origin + window.location.pathname.split('/store/')[0];
+        // Construct the permanent link
+        return `${baseUrl}/store/${path}`;
     }
 
     closePreview() {

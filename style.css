@@ -45,17 +45,28 @@ body {
 .sidebar {
     background-color: var(--sidebar-background);
     border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.theme-switch {
     padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .search-box {
     position: relative;
-    margin-bottom: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .search-box input {
     width: 100%;
-    padding: 0.5rem 2rem 0.5rem 0.5rem;
+    padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: var(--background-color);
@@ -71,8 +82,9 @@ body {
 }
 
 .file-tree {
+    flex: 1;
     overflow-y: auto;
-    height: calc(100vh - 4rem);
+    padding: 0.5rem;
 }
 
 .file-tree-item {
@@ -89,9 +101,30 @@ body {
     background-color: var(--hover-color);
 }
 
+.file-tree-item .folder-icon {
+    margin-right: 0.5rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.file-item .folder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.file-tree-item:hover .folder-icon,
+.file-item:hover .folder-icon {
+    color: var(--primary-color);
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
 .main-content {
-    padding: 1rem;
+    height: 100vh;
     overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
 }
 
 .breadcrumb {
@@ -131,28 +164,6 @@ body {
     color: var(--primary-color);
 }
 
-.folder-icon {
-    color: var(--primary-color);
-}
-
-.file-tree-item:hover .folder-icon,
-.file-item:hover .folder-icon {
-    color: var(--primary-color);
-    transform: scale(1.1);
-    transition: transform 0.2s ease;
-}
-
-.file-tree-item .folder-icon {
-    margin-right: 0.5rem;
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.file-item .folder-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
 .file-name {
     font-size: 0.9rem;
     overflow: hidden;
@@ -161,29 +172,24 @@ body {
 }
 
 .preview-panel {
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     border-left: 1px solid var(--border-color);
-    padding: 1rem;
     background-color: var(--preview-background);
 }
 
 .preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.close-preview {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #666;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .preview-content {
-    height: calc(100vh - 10rem);
-    overflow: auto;
-    margin-bottom: 1rem;
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
 }
 
 .preview-content pre {
@@ -199,12 +205,13 @@ body {
     height: auto;
 }
 
-.file-info {
+.file-info,
+.permanent-link {
     padding: 1rem;
+    margin: 1rem;
     background-color: var(--sidebar-background);
     border-radius: 4px;
-    font-size: 0.9rem;
-    color: var(--text-color);
+    flex-shrink: 0;
 }
 
 .file-info p {
@@ -273,6 +280,7 @@ body {
     gap: 1rem;
     width: 100%;
     height: 100%;
+    position: relative;
 }
 
 .svg-controls {
@@ -282,22 +290,9 @@ body {
     padding: 0.5rem;
     background-color: var(--sidebar-background);
     border-radius: 4px;
-}
-
-.svg-controls button {
-    background: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--text-color);
-}
-
-.svg-controls button:hover {
-    background-color: var(--hover-color);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    z-index: 10;
+    position: sticky;
+    top: 0;
 }
 
 .svg-wrapper {
@@ -311,11 +306,15 @@ body {
     overflow: auto;
     transform-origin: center center;
     transition: transform 0.2s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .svg-wrapper svg {
     max-width: 100%;
     height: auto;
+    position: relative;
+    z-index: 1;
 }
 
 .theme-switch {
@@ -376,6 +375,60 @@ input:checked + .slider:before {
     font-size: 0.9rem;
 }
 
+.permanent-link {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--sidebar-background);
+    border-radius: 4px;
+}
+
+.permanent-link h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.link-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.link-input {
+    flex: 1;
+    padding: 0.5rem;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.copy-link {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.copy-link:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.copy-link.copied {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
@@ -389,7 +442,6 @@ input:checked + .slider:before {
     background: #999;
     border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background: #666;
 }
