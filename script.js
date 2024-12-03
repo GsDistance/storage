@@ -99,6 +99,22 @@ class FileBrowser {
         return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
     }
 
+    getFileIcon(type, isFolder = false) {
+        if (isFolder) {
+            return 'fas fa-folder';
+        }
+        const iconMap = {
+            'pdf': 'fas fa-file-pdf',
+            'text': 'fas fa-file-alt',
+            'image': 'fas fa-file-image',
+            'video': 'fas fa-file-video',
+            'audio': 'fas fa-file-audio',
+            'code': 'fas fa-file-code',
+            'svg': 'fas fa-bezier-curve'
+        };
+        return iconMap[type] || 'fas fa-file';
+    }
+
     renderFileTree(parentEl = document.getElementById('fileTree'), path = '') {
         parentEl.innerHTML = '';
         const currentLevel = path ? this.getPathContent(path) : this.fileData;
@@ -108,16 +124,18 @@ class FileBrowser {
             item.className = 'file-tree-item';
             
             const icon = document.createElement('i');
-            icon.className = typeof content === 'object' && !content.type 
-                ? 'fas fa-folder' 
-                : this.getFileIcon(content.type);
+            const isFolder = typeof content === 'object' && !content.type;
+            icon.className = this.getFileIcon(content.type, isFolder);
+            if (isFolder) {
+                icon.classList.add('folder-icon');
+            }
             
             item.appendChild(icon);
             item.appendChild(document.createTextNode(name));
             
             item.addEventListener('click', () => {
                 const newPath = path ? `${path}/${name}` : name;
-                if (typeof content === 'object' && !content.type) {
+                if (isFolder) {
                     this.currentPath = newPath;
                     this.renderBreadcrumb();
                     this.renderFileGrid();
@@ -141,7 +159,11 @@ class FileBrowser {
             
             const icon = document.createElement('div');
             icon.className = 'file-icon';
-            icon.innerHTML = `<i class="${this.getFileIcon(content.type)}"></i>`;
+            const isFolder = typeof content === 'object' && !content.type;
+            icon.innerHTML = `<i class="${this.getFileIcon(content.type, isFolder)}"></i>`;
+            if (isFolder) {
+                icon.querySelector('i').classList.add('folder-icon');
+            }
             
             const fileName = document.createElement('div');
             fileName.className = 'file-name';
@@ -151,7 +173,7 @@ class FileBrowser {
             item.appendChild(fileName);
             
             item.addEventListener('click', () => {
-                if (typeof content === 'object' && !content.type) {
+                if (isFolder) {
                     this.currentPath += (this.currentPath ? '/' : '') + name;
                     this.renderBreadcrumb();
                     this.renderFileGrid();
@@ -204,19 +226,6 @@ class FileBrowser {
     getPathContent(path) {
         if (!path) return this.fileData;
         return path.split('/').reduce((acc, part) => acc[part], this.fileData);
-    }
-
-    getFileIcon(type) {
-        const iconMap = {
-            'pdf': 'fas fa-file-pdf',
-            'text': 'fas fa-file-alt',
-            'image': 'fas fa-file-image',
-            'video': 'fas fa-file-video',
-            'audio': 'fas fa-file-audio',
-            'code': 'fas fa-file-code',
-            'svg': 'fas fa-file-vector'
-        };
-        return iconMap[type] || 'fas fa-file';
     }
 
     async showPreview(name, fileInfo) {
