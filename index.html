@@ -20,6 +20,18 @@
             <div class="search-box">
                 <input type="text" id="search" placeholder="Search files...">
             </div>
+            <div class="file-type-filter">
+                <div class="filter-header">File Type</div>
+                <select id="fileTypeSelector">
+                    <option value="all" selected>All Files</option>
+                    <option value="image"><i class="fas fa-image"></i> Images</option>
+                    <option value="text"><i class="fas fa-file-alt"></i> Text Files</option>
+                    <option value="code"><i class="fas fa-code"></i> Code</option>
+                    <option value="svg"><i class="fas fa-bezier-curve"></i> SVG</option>
+                    <option value="pdf"><i class="fas fa-file-pdf"></i> PDF</option>
+                    <option value="audio"><i class="fas fa-music"></i> Audio</option>
+                </select>
+            </div>
             <div class="file-tree" id="fileTree"></div>
         </div>
         <div class="main-content">

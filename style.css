@@ -81,6 +81,102 @@ body {
     color: var(--icon-color);
 }
 
+.file-type-filter {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.file-type-filter select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    appearance: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.file-type-filter select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.file-type-filter select option {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.file-type-filter select option:checked {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-header {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.filter-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.filter-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-color);
+    font-size: 0.8rem;
+}
+
+.filter-options input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.filter-options input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.filter-options input[type="checkbox"]:checked::after {
+    content: '\2713';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+}
+
+.filter-options label:hover input[type="checkbox"] {
+    border-color: var(--primary-color);
+}
+
+.filter-options label i {
+    color: var(--icon-color);
+    transition: color 0.2s ease;
+}
+
+.filter-options label:hover i {
+    color: var(--primary-color);
+}
+
 .file-tree {
     flex: 1;
     overflow-y: auto;

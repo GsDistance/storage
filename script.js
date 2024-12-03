@@ -15,9 +15,17 @@ class FileBrowser {
     }
 
     setupEventListeners() {
-        document.getElementById('search').addEventListener('input', (e) => {
-            this.handleSearch(e.target.value);
-        });
+        // Search input
+        const searchInput = document.getElementById('search');
+        searchInput.addEventListener('input', () => this.filterFiles());
+
+        // File type filter
+        const fileTypeSelector = document.getElementById('fileTypeSelector');
+        fileTypeSelector.addEventListener('change', () => this.filterFiles());
+
+        // Theme switch and other existing listeners
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => this.toggleTheme());
 
         document.querySelector('.close-preview').addEventListener('click', () => {
             this.closePreview();
@@ -350,88 +358,92 @@ class FileBrowser {
         document.querySelector('.file-info').innerHTML = '';
     }
 
-    handleSearch(query) {
-        // Implement search functionality
-        if (!query) {
-            this.renderFileTree();
-            this.renderFileGrid();
-            return;
-        }
+    filterFiles() {
+        if (!this.fileData) return;
 
-        const searchResults = this.searchFiles(query);
-        this.renderSearchResults(searchResults);
-    }
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        const selectedFileType = document.getElementById('fileTypeSelector').value;
 
-    searchFiles(query) {
-        const results = [];
-        const search = (obj, path = '') => {
-            for (const [name, content] of Object.entries(obj)) {
-                const fullPath = path ? `${path}/${name}` : name;
-                if (name.toLowerCase().includes(query.toLowerCase())) {
-                    results.push({ name, path: fullPath, content });
-                }
-                if (typeof content === 'object' && !content.type) {
-                    search(content, fullPath);
-                }
+        const fileTree = document.getElementById('fileTree');
+        fileTree.innerHTML = '';
+
+        const filterFileType = (fileType) => {
+            switch(fileType) {
+                case 'image': return ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                case 'text': return ['txt', 'md', 'log'];
+                case 'code': return ['js', 'py', 'html', 'css', 'json', 'xml'];
+                case 'svg': return ['svg'];
+                case 'pdf': return ['pdf'];
+                case 'audio': return ['mp3', 'wav', 'ogg', 'flac'];
+                default: return [];
             }
         };
-        search(this.fileData);
-        return results;
-    }
 
-    renderSearchResults(results) {
-        const grid = document.getElementById('fileGrid');
-        grid.innerHTML = '';
+        const matchesSearch = (name) => 
+            searchTerm === '' || name.toLowerCase().includes(searchTerm);
 
-        results.forEach(({ name, path, content }) => {
-            const item = document.createElement('div');
-            item.className = 'file-item';
-            
-            const icon = document.createElement('div');
-            icon.className = 'file-icon';
-            icon.innerHTML = `<i class="${this.getFileIcon(content.type)}"></i>`;
-            
-            const fileName = document.createElement('div');
-            fileName.className = 'file-name';
-            fileName.textContent = `${name} (${path})`;
-            
-            item.appendChild(icon);
-            item.appendChild(fileName);
-            
-            item.addEventListener('click', () => {
-                if (typeof content === 'object' && !content.type) {
-                    this.currentPath = path;
-                    this.renderBreadcrumb();
-                    this.renderFileGrid();
-                } else {
-                    this.showPreview(name, content);
+        const matchesFileType = (fileInfo) => {
+            if (selectedFileType === 'all') return true;
+            const fileExtension = fileInfo.name.split('.').pop().toLowerCase();
+            return filterFileType(selectedFileType).includes(fileExtension);
+        };
+
+        const renderFilteredFiles = (files, parentElement = fileTree, path = this.currentPath) => {
+            files.forEach(file => {
+                if (file.type === 'directory') {
+                    const folderElement = this.createFolderElement(file, path);
+                    parentElement.appendChild(folderElement);
+                    
+                    if (file.children) {
+                        const subfolderContainer = document.createElement('div');
+                        subfolderContainer.className = 'subfolder';
+                        folderElement.appendChild(subfolderContainer);
+                        
+                        renderFilteredFiles(
+                            file.children.filter(child => 
+                                matchesSearch(child.name) && 
+                                (child.type === 'directory' || matchesFileType(child))
+                            ), 
+                            subfolderContainer, 
+                            `${path}/${file.name}`
+                        );
+                    }
+                } else if (matchesSearch(file.name) && matchesFileType(file)) {
+                    const fileElement = this.createFileElement(file, path);
+                    parentElement.appendChild(fileElement);
                 }
             });
+        };
 
-            grid.appendChild(item);
+        renderFilteredFiles(this.fileData);
+    }
+
+    createFolderElement(file, path) {
+        const folderElement = document.createElement('div');
+        folderElement.className = 'folder';
+        folderElement.innerHTML = `
+            <i class="fas fa-folder"></i>
+            <span>${file.name}</span>
+        `;
+        folderElement.addEventListener('click', () => {
+            this.currentPath = `${path}/${file.name}`;
+            this.renderBreadcrumb();
+            this.renderFileGrid();
         });
+        return folderElement;
     }
 
-    showEmptyState() {
-        const grid = document.getElementById('fileGrid');
-        grid.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-folder-open"></i>
-                <h3>No files found</h3>
-                <p>Add files to your store directory to see them here.</p>
-            </div>
+    createFileElement(file, path) {
+        const fileElement = document.createElement('div');
+        fileElement.className = 'file';
+        fileElement.innerHTML = `
+            <i class="fas fa-file"></i>
+            <span>${file.name}</span>
         `;
-    }
-
-    showErrorState() {
-        const grid = document.getElementById('fileGrid');
-        grid.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <h3>Error loading files</h3>
-                <p>There was a problem loading the file list. Please try again later.</p>
-            </div>
-        `;
+        fileElement.addEventListener('click', () => {
+            this.showPreview(file.name, file);
+        });
+        return fileElement;
     }
 
     initTheme() {
@@ -454,6 +466,39 @@ class FileBrowser {
                 localStorage.setItem('theme', 'light');
             }
         });
+    }
+
+    toggleTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    showEmptyState() {
+        const grid = document.getElementById('fileGrid');
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <h3>No files found</h3>
+                <p>Add files to your store directory to see them here.</p>
+            </div>
+        `;
+    }
+
+    showErrorState() {
+        const grid = document.getElementById('fileGrid');
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Error loading files</h3>
+                <p>There was a problem loading the file list. Please try again later.</p>
+            </div>
+        `;
     }
 }
 
