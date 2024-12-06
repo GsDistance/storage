@@ -350,7 +350,7 @@ class FileBrowser {
         // Get the current URL's origin and pathname up to the repository root
         const baseUrl = window.location.origin + window.location.pathname.split('/store/')[0];
         // Construct the permanent link
-        return `${baseUrl}/store/${path}`;
+        return `${baseUrl}store/${path}`;
     }
 
     closePreview() {
