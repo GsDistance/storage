@@ -359,63 +359,65 @@ class FileBrowser {
     }
 
     filterFiles() {
-        if (!this.fileData) return;
-
         const searchTerm = document.getElementById('search').value.toLowerCase();
         const selectedFileType = document.getElementById('fileTypeSelector').value;
-
         const fileTree = document.getElementById('fileTree');
         fileTree.innerHTML = '';
 
-        const filterFileType = (fileType) => {
-            switch(fileType) {
-                case 'image': return ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                case 'text': return ['txt', 'md', 'log'];
-                case 'code': return ['js', 'py', 'html', 'css', 'json', 'xml'];
-                case 'svg': return ['svg'];
-                case 'pdf': return ['pdf'];
-                case 'audio': return ['mp3', 'wav', 'ogg', 'flac'];
-                default: return [];
-            }
+        const matchesSearch = (path) => {
+            return !searchTerm || path.toLowerCase().includes(searchTerm);
         };
 
-        const matchesSearch = (name) => 
-            searchTerm === '' || name.toLowerCase().includes(searchTerm);
-
-        const matchesFileType = (fileInfo) => {
+        const matchesFileType = (file) => {
             if (selectedFileType === 'all') return true;
-            const fileExtension = fileInfo.name.split('.').pop().toLowerCase();
-            return filterFileType(selectedFileType).includes(fileExtension);
+            const extension = file.path.split('.').pop().toLowerCase();
+            return extension === selectedFileType;
+        };
+
+        const shouldShowFolder = (folder) => {
+            if (!folder || !folder.children) return false;
+            
+            // Check if the folder name matches the search
+            if (matchesSearch(folder.path)) return true;
+
+            // Recursively check if any child matches the criteria
+            return folder.children.some(child => {
+                if (child.type === 'directory') {
+                    return shouldShowFolder(child);
+                }
+                return matchesSearch(child.path) && matchesFileType(child);
+            });
         };
 
         const renderFilteredFiles = (files, parentElement = fileTree, path = this.currentPath) => {
-            files.forEach(file => {
+            if (!files || typeof files !== 'object') return;
+            
+            Object.entries(files).forEach(([key, file]) => {
+                if (!file || !file.path) return;
+                
+                const fileName = file.path.split('/').pop();
+                
                 if (file.type === 'directory') {
-                    const folderElement = this.createFolderElement(file, path);
-                    parentElement.appendChild(folderElement);
-                    
-                    if (file.children) {
-                        const subfolderContainer = document.createElement('div');
-                        subfolderContainer.className = 'subfolder';
-                        folderElement.appendChild(subfolderContainer);
+                    // Only show folder if it or any of its children match the criteria
+                    if (shouldShowFolder(file)) {
+                        const folderElement = this.createFolderElement(file, path);
+                        parentElement.appendChild(folderElement);
                         
-                        renderFilteredFiles(
-                            file.children.filter(child => 
-                                matchesSearch(child.name) && 
-                                (child.type === 'directory' || matchesFileType(child))
-                            ), 
-                            subfolderContainer, 
-                            `${path}/${file.name}`
-                        );
+                        if (file.children) {
+                            const subfolderContainer = document.createElement('div');
+                            subfolderContainer.className = 'subfolder';
+                            folderElement.appendChild(subfolderContainer);
+                            renderFilteredFiles(file.children, subfolderContainer, `${path}/${fileName}`);
+                        }
                     }
-                } else if (matchesSearch(file.name) && matchesFileType(file)) {
+                } else if (matchesSearch(file.path) && matchesFileType(file)) {
                     const fileElement = this.createFileElement(file, path);
                     parentElement.appendChild(fileElement);
                 }
             });
         };
 
-        renderFilteredFiles(this.fileData);
+        renderFilteredFiles(this.getPathContent(this.currentPath));
     }
 
     createFolderElement(file, path) {
@@ -423,10 +425,10 @@ class FileBrowser {
         folderElement.className = 'folder';
         folderElement.innerHTML = `
             <i class="fas fa-folder"></i>
-            <span>${file.name}</span>
+            <span>${file.path.split('/').pop()}</span>
         `;
         folderElement.addEventListener('click', () => {
-            this.currentPath = `${path}/${file.name}`;
+            this.currentPath = `${path}/${file.path.split('/').pop()}`;
             this.renderBreadcrumb();
             this.renderFileGrid();
         });
@@ -438,10 +440,10 @@ class FileBrowser {
         fileElement.className = 'file';
         fileElement.innerHTML = `
             <i class="fas fa-file"></i>
-            <span>${file.name}</span>
+            <span>${file.path.split('/').pop()}</span>
         `;
         fileElement.addEventListener('click', () => {
-            this.showPreview(file.name, file);
+            this.showPreview(file.path.split('/').pop(), file);
         });
         return fileElement;
     }
