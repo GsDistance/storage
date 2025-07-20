@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+    <defs>
+        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    
+    <path 
+        d="M128 64 
+           C90 100, 64 140, 128 180 
+           C192 140, 166 100, 128 64" 
+        fill="none" 
+        stroke="url(#goldGradient)" 
+        stroke-width="20" 
+        stroke-linecap="round"
+    />
+    
+    <path 
+        d="M128 64 
+           Q160 100, 128 136 
+           Q96 172, 128 208" 
+        fill="none" 
+        stroke="url(#goldGradient)" 
+        stroke-width="20" 
+        stroke-linecap="round"
+    />
+</svg>
