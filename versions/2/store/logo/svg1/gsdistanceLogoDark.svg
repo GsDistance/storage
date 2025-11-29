@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="48" version="1.1" viewBox="0 0 128 48" xmlns="http://www.w3.org/2000/svg">
+    <!-- Dark rounded square background -->
+    <rect x="2" y="2" width="124" height="44" rx="8" ry="8" fill="#2d2d2d"/>
+    
+    <!-- Purple GsDistance text -->
+    <text x="64" y="30" fill="#bb86fc" font-family="'Segoe UI', sans-serif" font-size="20px" font-weight="bold" text-anchor="middle">GsDistance</text>
+</svg>

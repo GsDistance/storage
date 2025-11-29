@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="store/logo/svg1/storage-favicon.svg">
+    <title>GsDistance Permanent File Storage</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="theme-switch">
+                <label class="switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="theme-label">Dark Mode</span>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search files...">
+            </div>
+            <div class="file-type-filter">
+                <div class="filter-header">File Type</div>
+                <select id="fileTypeSelector">
+                    <option value="all" selected>All Files</option>
+                    <option value="image"><i class="fas fa-image"></i> Images</option>
+                    <option value="text"><i class="fas fa-file-alt"></i> Text Files</option>
+                    <option value="code"><i class="fas fa-code"></i> Code</option>
+                    <option value="svg"><i class="fas fa-bezier-curve"></i> SVG</option>
+                    <option value="pdf"><i class="fas fa-file-pdf"></i> PDF</option>
+                    <option value="audio"><i class="fas fa-music"></i> Audio</option>
+                </select>
+            </div>
+            <div class="file-tree" id="fileTree"></div>
+        </div>
+        <div class="main-content">
+            <div class="breadcrumb" id="breadcrumb"></div>
+            <div class="file-grid" id="fileGrid"></div>
+        </div>
+        <div class="preview-panel" id="previewPanel">
+            <button class="close-preview" aria-label="Close preview"></button>
+            <div class="preview-content"></div>
+            <div class="file-info"></div>
+            <div class="permanent-link">
+                <h4>Permanent Link</h4>
+                <div class="link-container">
+                    <input type="text" readonly class="link-input" />
+                    <button class="copy-link" title="Copy link"><i class="fas fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

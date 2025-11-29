@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <title>Gold Cursive G Logo</title>
+  <desc>An elegant gold cursive G with gradient and shadow effects</desc>
+  <defs>
+    <style type="text/css">
+      @font-face {
+        font-family: 'Imperial Script';
+        src: url('../../font/ImperialScript-Regular.ttf') format('truetype');
+      }
+    </style>
+  </defs>
+  <text x="10" y="40" font-family="'Imperial Script', cursive" font-size="40">GsD</text>
+</svg>
